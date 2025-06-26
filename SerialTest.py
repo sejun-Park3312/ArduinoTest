@@ -1,8 +1,11 @@
 import serial
+from pyfirmata2 import ArduinoMega, util
 import time
 
 # 포트 이름은 OS에 따라 다릅니다.
-# Windows: COM3, COM4 등 / macOS & Linux: /dev/ttyUSB0 등
+board = ArduinoMega('COM7')  # 실제 연결된 포트로 수정 필요
+it = util.Iterator(board)
+it.start()
 arduino = serial.Serial('COM7', 115200, timeout=1)
 
 print("시작합니다...")
