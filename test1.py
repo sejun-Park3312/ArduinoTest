@@ -1,16 +1,26 @@
 import time
 from pyfirmata2 import ArduinoMega, util
+PWM_PINs = [2]
+DIR_PINs = [30]
+BRK_PINs = [38]
 
-board = ArduinoMega('COM7')
-it = util.Iterator(board)
-it.start()
-time.sleep(1)
+pwm_list = [board.get_pin(f'd:{pin}:p') for pin in PWM_PINs]
+dir_list = [board.get_pin(f'd:{pin}:o') for pin in DIR_PINs]
+brk_list = [board.get_pin(f'd:{pin}:o') for pin in BRK_PINs]
 
-start_time = time.time()
-board.digital[13].write(1)
-end_time = time.time()
+Time_start = time.time()
+brk_list[0].write(0)  # 브레이크 해제
+print("Start!")
 
-latency_ms = (end_time - start_time) * 1000
-print(f"pyfirmata2 write latency: {latency_ms:.6f} ms")
+while time.time() - Time_start < 10:
 
+    dir_list[0].write(1)  # 방향 설정
+    pwm_list[0].write(1.0)  # 전류 인가 (100%)
+
+
+pwm_list[0].write(1.0)  # 전류 인가 (100%)
+brk_list[0].write(0)  # 브레이크 해제
+
+print("End!")
+# 종료 처리
 board.exit()
