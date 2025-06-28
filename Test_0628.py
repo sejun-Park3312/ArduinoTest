@@ -19,7 +19,7 @@ def update(frame):
     t = time.time() - start_time
 
     # 10초 지나면 종료 신호 전송
-    if t >= 10:
+    if t >= 20:
         print("Stopping...")
         ser.write(b'999\n')
         time.sleep(1)
