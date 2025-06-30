@@ -1,36 +1,92 @@
 import time
-import numpy as np
 import threading
+import pandas as pd
 
 class RealTimeData:
     def __init__(self):
-        self.Running = True
+        self.Running = False
         self.Data = {}
+        self.Avg_Data = {}
+        self.Buffer = {}
+        self.lock = threading.Lock()
 
 
     def DefineData(self, DataName, Keys):
         if DataName not in self.Data:
+            self.Data[DataName] = {}
             self.Data[DataName]['Value'] = {key: [] for key in Keys}
-            self.Data[DataName]['Time'] = {key: [] for key in ['TimeStamp', 'StartTime']}
-            print(self.Data[DataName]['Value'])
+            self.Buffer = {key: [] for key in Keys}
+            self.Data[DataName]['Time'] = {'TimeStamp': [], 'StartTime': None}
+
+            print(self.Data[DataName])
             print(f"Data Storage '{DataName}' Created!")
         else:
             print(f"Data Storage '{DataName}' Already Exists!")
 
 
-    def AppendData(self, DataName, Keys, Value):
-        if self.Data[DataName]['Time']['StartTime']:
-            for key, value in zip(Keys, Value):
-                self.Data[DataName]['Value'][key].append(value)
-            self.Data[DataName]['Time']['TimeStamp'] = time.time() - self.Data[DataName]['Time']['StartTime']
+    def AppendData(self, DataName, Value):
+        Keys = list(self.Data[DataName]['Value'].keys())
 
+        for key, value in zip(Keys, Value):
+            self.Data[DataName]['Value'][key].append(value)
+            self.Buffer[key].append(value)
+
+        if self.Data[DataName]['Time']['StartTime']:
+            self.Data[DataName]['Time']['TimeStamp'].append(time.time() - self.Data[DataName]['Time']['StartTime'])
         else:
-            for key, value in zip(Keys, Value):
-                self.Data[DataName]['Value'][key].append(value)
             StartTime = time.time()
             self.Data[DataName]['Time']['StartTime'] = StartTime
-            self.Data[DataName]['Time']['TimeStamp'] = 0
+            self.Data[DataName]['Time']['TimeStamp'].append(0)
+
+        self.Running = True
+
+
+    def Define_AvgData(self, DataName, SamplingTime):
+        Keys = list(self.Data[DataName]['Value'].keys())
+        self.Avg_Data[DataName] = {}
+        self.Avg_Data[DataName]['Value'] = {key: [] for key in Keys}
+        self.Avg_Data[DataName]['Time'] = {'TimeStamp': [], 'SamplingTime': SamplingTime}
+        for keys in Keys:
+            self.Avg_Data[DataName]["Value"][keys].append(self.Data[DataName]["Value"][keys][0])
+        self.Avg_Data[DataName]['Time']["TimeStamp"].append(0)
+
+
+    def Append_AvgData(self, DataName, SamplingTime):
+        Keys = list(self.Data[DataName]['Value'].keys())
+        Flag = True
+        while Flag:
+            while self.Running:
+                Flag = False
+                time.sleep(SamplingTime)
+                with self.lock:
+                    if DataName not in self.Avg_Data:
+                        self.Define_AvgData(DataName, SamplingTime)
+
+                    else:
+                        for keys in Keys:
+                            if self.Buffer[keys]:
+                                avg_value = sum(self.Buffer[keys]) / len(self.Buffer[keys])
+                            else:
+                                avg_value = self.Data[DataName][keys][-1]
+
+                            self.Avg_Data[DataName]['Value'][keys].append(avg_value)
+                            self.Buffer[keys] = []
+                        self.Avg_Data[DataName]['Time']["TimeStamp"].append(time.time() - self.Data[DataName]["Time"]["StartTime"])
+
+    def Collect_AvgData(self, DataName, SamplingTime):
+        threading.Thread(target=self.Append_AvgData, args=(DataName, SamplingTime), daemon=True).start()
 
 
 
-    # def CollectData(self):
+    def SaveData(self, Data, FileName):
+        FileName += '.xlsx'
+        TimeStamp = Data["Time"]["TimeStamp"]
+        Value = Data["Value"]
+
+        ExelData = {'Time': TimeStamp}
+        for key in Value:
+            ExelData[key] = Value[key]
+
+        df = pd.DataFrame(ExelData)
+        df.to_excel(FileName, index=False)
+        print(f"Data Saved!")
