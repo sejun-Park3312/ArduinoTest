@@ -61,17 +61,18 @@ class RealTimeData:
                 with self.lock:
                     if DataName not in self.Avg_Data:
                         self.Define_AvgData(DataName, SamplingTime)
-
                     else:
+                        self.Avg_Data[DataName]['Time']["TimeStamp"].append(
+                            time.time() - self.Data[DataName]["Time"]["StartTime"])
                         for keys in Keys:
                             if self.Buffer[keys]:
                                 avg_value = sum(self.Buffer[keys]) / len(self.Buffer[keys])
                             else:
-                                avg_value = self.Data[DataName][keys][-1]
-
+                                print(self.Data[DataName][keys][-1])
+                                avg_value = self.Data[DataName]['Value'][keys][-1]
                             self.Avg_Data[DataName]['Value'][keys].append(avg_value)
                             self.Buffer[keys] = []
-                        self.Avg_Data[DataName]['Time']["TimeStamp"].append(time.time() - self.Data[DataName]["Time"]["StartTime"])
+
 
     def Collect_AvgData(self, DataName, SamplingTime):
         threading.Thread(target=self.Append_AvgData, args=(DataName, SamplingTime), daemon=True).start()

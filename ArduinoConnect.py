@@ -10,14 +10,21 @@ class ArduinoConnect:
 
 
     def ReadArduino(self):
-        line = self.ArduinoSerial.readline().decode().strip()
-        StringValue = line.split(',')
-        Value = [float(v.strip()) for v in StringValue]
-        return Value
+        try:
+            line = self.ArduinoSerial.readline().decode().strip()
+            StringValue = line.split(',')
+            Value = [float(v.strip()) for v in StringValue]
+            return Value
+        except Exception as e:
+            print(f"Read Failed: {e}")
+            return None
 
 
     def SendArduino(self, Value):
-        self.ArduinoSerial.write(f"{Value}\n".encode())
+        try:
+            self.ArduinoSerial.write(f"{Value}\n".encode())
+        except Exception as e:
+            print(f"Send Failed: {e}")
 
 
     def DisconnectArduino(self):
