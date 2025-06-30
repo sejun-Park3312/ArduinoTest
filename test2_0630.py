@@ -9,7 +9,7 @@ RTD = RealTimeData()
 RTD.DefineData('Current', ['A', 'PWM'])
 RTD.Collect_AvgData('Current', 0.05)
 
-freq = 0.2
+freq = 0.05
 pwmMax = 255
 alpha = 0.7
 coeff = [-11.4583,   14.4676,   -6.1424,    1.5870,   -0.0001]
@@ -30,5 +30,5 @@ RTD.Running = False
 print("End Sensing!")
 
 AC.DisconnectArduino()
-print(sum(RTD.Avg_Data["Current"]["Value"]["A"][-40:])/40)
+# print(sum(RTD.Avg_Data["Current"]["Value"]["A"][-40:])/40)
 RTD.SaveData(RTD.Avg_Data["Current"], 'Ex')
