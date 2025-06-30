@@ -68,7 +68,6 @@ class RealTimeData:
                             if self.Buffer[keys]:
                                 avg_value = sum(self.Buffer[keys]) / len(self.Buffer[keys])
                             else:
-                                print(self.Data[DataName][keys][-1])
                                 avg_value = self.Data[DataName]['Value'][keys][-1]
                             self.Avg_Data[DataName]['Value'][keys].append(avg_value)
                             self.Buffer[keys] = []

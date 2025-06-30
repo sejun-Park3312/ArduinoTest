@@ -2,10 +2,11 @@ import time
 import numpy as np
 from ArduinoConnect import ArduinoConnect
 from RealTimeData import RealTimeData
+from Plotter import LivePlotter
 
 AC = ArduinoConnect('COM7', 115200)
 RTD = RealTimeData()
-RTD.DefineData('Current', ['A'])
+RTD.DefineData('Current', ['A', 'PWM'])
 RTD.Collect_AvgData('Current', 0.02)
 
 freq = 0.2
@@ -20,8 +21,7 @@ while time.time() - StartTime < 10:
 
     AC.SendArduino(PWM)
     Current = AC.ReadArduino()
-
-    RTD.AppendData('Current', Current)
+    RTD.AppendData('Current', [Current[0], PWM])
 
 RTD.Running = False
 AC.DisconnectArduino()
