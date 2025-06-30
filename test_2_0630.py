@@ -1,12 +1,11 @@
 import serial
 import time
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from ArduinoConnect import ArduinoConnect
 from collections import deque
 
-ser = serial.Serial('COM7', 115200)
-time.sleep(2)
+AC = ArduinoConnect('COM7', 115200)
+
 
 freq = 0.2
 pwmMax = 255
