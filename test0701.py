@@ -8,20 +8,19 @@ AC = ArduinoConnect('COM7', 115200)
 RTD = RealTimeData()
 RTD.DefineData('Current', ['A', 'PWM'])
 
-freq = 0.1
+freq = 0.2
 pwmMax = 255
 
 print("Start Sensing!")
 StartTime = time.time()
-while time.time() - StartTime < 20:
+while time.time() - StartTime < 10:
     t = time.time() - StartTime
-    duty = 0.75 + 0.25 * np.sin(2 * np.pi * freq * t)
-    PWM = int(duty * pwmMax)
-
-    AC.SendArduino(PWM)
+    desired_A = (0.75 + 0.25 * np.sin(2 * np.pi * freq * t))
+    pwmValue = int((desired_A + 0.015)/1.125 * 255)
+    AC.SendArduino(pwmValue)
     Current = AC.ReadArduino()
 
-    RTD.AppendData('Current', [Current[0], float(int(duty * pwmMax))/255])
+    RTD.AppendData('Current', [Current[0], desired_A])
     time.sleep(2/1000)
 
 RTD.Running = False
